@@ -5,11 +5,16 @@ from dotenv import load_dotenv
 from sentiment_analyzer import classify_sentiment, aggregate_sentiment
 
 load_dotenv()
-api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+vantage_api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+
+finnhub_api_key = os.getenv('FINNHUB_API_KEY')
+
+fmp_api_key = os.getenv('FMP_API_KEY')
 
 app = FastAPI()
 
 def preprocess_text(text):
+
     return text.lower()
 
 @app.get("/")
@@ -17,10 +22,10 @@ def home():
     """ Root endpoint """
     return {"message": "Welcome to the Sentiment Analysis API"}
 
-@app.get("/sentiment")
-def get_sentiment(ticker: str):
+@app.get("/vantage_sentiment")
+def get_vantage_sentiment(ticker: str):
     """ Fetches news articles and returns aggregated sentiment analysis """
-    url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={api_key}'
+    url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={vantage_api_key}'
     response = requests.get(url)
     data = response.json()
 

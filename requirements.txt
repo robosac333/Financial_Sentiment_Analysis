@@ -19,3 +19,4 @@ tokenizers
 sentencepiece
 tqdm
 fastapi
+websocket-client
