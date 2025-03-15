@@ -1,22 +1,17 @@
-# API and Web Dependencies
-boto3
-fastapi
-uvicorn
-python-dotenv
 requests
 bs4
 PyYAML
 
-# Sentiment Analysis Dependencies
-torch --index-url https://download.pytorch.org/whl/cpu
-torchvision --index-url https://download.pytorch.org/whl/cpu
-torchaudio --index-url https://download.pytorch.org/whl/cpu
-transformers
+fastapi==0.115.11
+uvicorn==0.23.2
+httpx==0.24.1
+python-dotenv==1.0.1
+torch==2.5.1
+transformers==4.46.3
+nltk==3.9.1
+
 gradio==3.0.0
 numpy==1.21.4
-
 tokenizers
 sentencepiece
 tqdm
-fastapi
-websocket-client
