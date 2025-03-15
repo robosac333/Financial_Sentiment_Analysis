@@ -1,30 +1,20 @@
-FROM nginx:stable
+# Base Python image
+FROM python:3.9-slim
 
-# Install Python and required system dependencies
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set up the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy requirements first to leverage Docker caching
+# Copy requirements.txt
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY . .
 
-# Configure Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Expose port
+EXPOSE 5000
 
-# Expose the port Nginx will run on
-EXPOSE 80
-
-# Start script to run both Nginx and Uvicorn
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD ["/start.sh"]
+# Command to run the application
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]

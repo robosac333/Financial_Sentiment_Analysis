@@ -28,3 +28,29 @@ After the app gets activated you may connect to the app by querying the required
 ```sh
 http://localhost:5000/api/v1/sentiment?ticker=AAPL
 ```
+
+## Building and Running the Docker Image
+To build the docker image go to the workspace containing the Dockerfile and run the following command:
+```sh
+docker build -t sentiment-api .
+```
+
+Make sure your .env file exists in the same directory and contains your API key:
+```sh
+ALPHA_VANTAGE_API_KEY=your_api_key_here
+```
+
+To create and run a container out of the image
+```sh
+docker run -p 5000:5000 --env-file .env -d --name sentiment-api-container sentiment-api
+```
+
+To test if the API is running correctly, you can use curl (or a web browser):
+```sh
+curl http://localhost:5000/
+```
+
+To test the sentiment analysis endpoint:
+```sh
+curl http://localhost:5000/api/v1/sentiment?ticker=AAPL
+```

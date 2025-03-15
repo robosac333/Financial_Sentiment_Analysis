@@ -10,8 +10,6 @@ torch==2.5.1
 transformers==4.46.3
 nltk==3.9.1
 
-gradio==3.0.0
-numpy==1.21.4
 tokenizers
 sentencepiece
 tqdm
