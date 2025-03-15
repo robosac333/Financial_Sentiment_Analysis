@@ -4,11 +4,9 @@ from pydantic import BaseModel, Field
 import os
 import httpx
 from dotenv import load_dotenv
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from collections import Counter
 
 from preprocess import preprocess_text
+from sentiment_analyzer import classify_sentiment, aggregate_sentiment
 
 # Loaded environment variables from the .env file (e.g., the API key)
 load_dotenv()
@@ -29,71 +27,6 @@ class SentimentResponse(BaseModel):
     average_sentiment_score: float = Field(..., example=0.345)
     most_common_sentiment: str = Field(..., example="Bullish")
 
-# Loaded the FinBERT tokenizer and model from Hugging Face
-tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
-
-def classify_sentiment(text):
-    """
-    Classified the sentiment of the input text using FinBERT.
-    - Tokenized the input and converted it into tensors.
-    - Obtained model outputs without computing gradients (in inference mode).
-    - Applied softmax to obtain a probability distribution.
-    - Calculated the sentiment score as half the difference between positive and negative scores.
-    - Determined the sentiment label based on predefined thresholds.
-    Returned a tuple containing the sentiment label and the sentiment score.
-    """
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    with torch.no_grad():
-        outputs = model(**inputs)
-    probs = torch.softmax(outputs.logits, dim=-1).squeeze()
-    negative_score = probs[0].item()
-    # neutral_score = probs[1].item()
-    positive_score = probs[2].item()
-    
-    # Calculated the sentiment score
-    sentiment_score = (positive_score - negative_score) * 0.5
-
-    # Determined the sentiment label based on the score
-    if sentiment_score >= 0.9:
-        sentiment_label = "Bullish"
-    elif 0.4 <= sentiment_score < 0.9:
-        sentiment_label = "Somewhat-Bullish"
-    elif -0.4 <= sentiment_score < 0.4:
-        sentiment_label = "Neutral"
-    elif -0.9 < sentiment_score < -0.4:
-        sentiment_label = "Somewhat-Bearish"
-    else:
-        sentiment_label = "Bearish"
-
-    return sentiment_label, sentiment_score
-
-def aggregate_sentiment(sentiment_scores, sentiment_labels):
-    """
-    Aggregated multiple sentiment scores and labels by:
-    - Computing the average sentiment score.
-    - Determining the most common sentiment label using a counter.
-    - Assigning a final sentiment label based on the average score.
-    Returned a tuple containing the final sentiment label, the average score, and the most common label.
-    """
-    if not sentiment_scores:
-        return "No Sentiment Data", 0.0, "No Data"
-    
-    avg_score = sum(sentiment_scores) / len(sentiment_scores)
-    most_common_label = Counter(sentiment_labels).most_common(1)[0][0]
-    
-    if avg_score >= 0.9:
-        final_sentiment = "Bullish"
-    elif 0.4 <= avg_score < 0.9:
-        final_sentiment = "Somewhat-Bullish"
-    elif -0.4 <= avg_score < 0.4:
-        final_sentiment = "Neutral"
-    elif -0.9 < avg_score < -0.4:
-        final_sentiment = "Somewhat-Bearish"
-    else:
-        final_sentiment = "Bearish"
-
-    return final_sentiment, avg_score, most_common_label
 
 @app.get("/", tags=["General"])
 def home():
@@ -176,4 +109,4 @@ async def get_sentiment(ticker: str):
 # Ran the FastAPI application using Uvicorn when this module was executed directly
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("app:app", host="0.0.0.0", port=5000, reload=True)

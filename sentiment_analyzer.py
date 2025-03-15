@@ -2,48 +2,68 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from collections import Counter
 
+# Loaded the FinBERT tokenizer and model from Hugging Face
 tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
 model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
 
 def classify_sentiment(text):
+    """
+    Classified the sentiment of the input text using FinBERT.
+    - Tokenized the input and converted it into tensors.
+    - Obtained model outputs without computing gradients (in inference mode).
+    - Applied softmax to obtain a probability distribution.
+    - Calculated the sentiment score as half the difference between positive and negative scores.
+    - Determined the sentiment label based on predefined thresholds.
+    Returned a tuple containing the sentiment label and the sentiment score.
+    """
     inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():
         outputs = model(**inputs)
-
     probs = torch.softmax(outputs.logits, dim=-1).squeeze()
-    negative_score = probs[0].item()
-    neutral_score = probs[1].item()
-    positive_score = probs[2].item()
-
-    sentiment_score = positive_score - negative_score  
-
-    if sentiment_score >= 0.5:
+    
+    negative = probs[0].item()
+    neutral = probs[1].item()
+    positive = probs[2].item()
+    
+    # Calculate a weighted sentiment score (-1 to 1 range)
+    sentiment_score = positive - negative
+    
+    # More nuanced classification using both class probabilities and score
+    if positive > 0.6:
         sentiment_label = "Bullish"
-    elif sentiment_score >= 0.2:
+    elif positive > negative and positive > neutral and 0.4 <= positive <= 0.6:
         sentiment_label = "Somewhat-Bullish"
-    elif sentiment_score >= -0.2:
-        sentiment_label = "Neutral"
-    elif sentiment_score >= -0.5:
+    elif negative > 0.6:
+        sentiment_label = "Bearish"
+    elif negative > positive and negative > neutral and 0.4 <= negative <= 0.6:
         sentiment_label = "Somewhat-Bearish"
     else:
-        sentiment_label = "Bearish"
-
+        sentiment_label = "Neutral"
+        
     return sentiment_label, sentiment_score
 
 def aggregate_sentiment(sentiment_scores, sentiment_labels):
+    """
+    Aggregated multiple sentiment scores and labels by:
+    - Computing the average sentiment score.
+    - Determining the most common sentiment label using a counter.
+    - Assigning a final sentiment label based on the average score.
+    Returned a tuple containing the final sentiment label, the average score, and the most common label.
+    """
     if not sentiment_scores:
-        return "No Sentiment Data", 0.0
-
+        return "No Sentiment Data", 0.0, "No Data"
+    
     avg_score = sum(sentiment_scores) / len(sentiment_scores)
     most_common_label = Counter(sentiment_labels).most_common(1)[0][0]
-
-    if avg_score >= 0.5:
+    
+    # Use same thresholds as in classify_sentiment
+    if avg_score >= 0.9:
         final_sentiment = "Bullish"
-    elif avg_score >= 0.2:
+    elif 0.4 <= avg_score < 0.9:
         final_sentiment = "Somewhat-Bullish"
-    elif avg_score >= -0.2:
+    elif -0.4 <= avg_score < 0.4:
         final_sentiment = "Neutral"
-    elif avg_score >= -0.5:
+    elif -0.9 < avg_score < -0.4:
         final_sentiment = "Somewhat-Bearish"
     else:
         final_sentiment = "Bearish"
