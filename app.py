@@ -12,7 +12,6 @@ from sentiment_analyzer import classify_sentiment, aggregate_sentiment
 load_dotenv()
 api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
 
-
 # Initialized the FastAPI application with metadata
 app = FastAPI(
     title="Financial Sentiment Analysis API",
@@ -109,4 +108,4 @@ async def get_sentiment(ticker: str):
 # Ran the FastAPI application using Uvicorn when this module was executed directly
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,8 +1,6 @@
 import re
 import nltk
 import string
-
-# Imported NLTK modules for text preprocessing
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -12,6 +10,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 nltk.download('punkt')
+nltk.download('punkt_tab') 
 
 # Initialized the stopwords set and lemmatizer used for preprocessing text
 stop_words = set(stopwords.words('english'))
@@ -28,6 +27,7 @@ def preprocess_text(text):
     - Lemmatizing tokens.
     Returned the processed text as a single string.
     """
+    # Initialize NLTK resources
     text = text.lower()
     text = re.sub(r"http\S+|www\S+", "", text)  # Removed URLs
     text = text.translate(str.maketrans("", "", string.punctuation))  # Removed punctuation
