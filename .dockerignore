@@ -10,3 +10,5 @@ ENV/
 .gitignore
 Dockerfile
 .dockerignore
+ground_truth.py
+gradio_interface.py

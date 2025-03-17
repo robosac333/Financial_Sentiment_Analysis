@@ -27,7 +27,7 @@ def get_sentiment(ticker: str) -> Dict[str, Any]:
     if 'feed' not in data:
         print("Error: No feed data found in response")
         return {"error": "No data available"}
-    
+
     # Extract ticker-specific sentiment from all articles
     sentiment_scores = []
     sentiment_labels = []
