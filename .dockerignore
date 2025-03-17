@@ -11,3 +11,4 @@ ENV/
 Dockerfile
 .dockerignore
 ground_truth.py
+gradio_interface.py
