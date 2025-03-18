@@ -29,17 +29,16 @@ def classify_sentiment(text):
     sentiment_score = positive - negative
     
     # More nuanced classification using both class probabilities and score
-    if positive > 0.6:
+    if sentiment_score >= 0.5:
         sentiment_label = "Bullish"
-    elif positive > negative and positive > neutral and 0.4 <= positive <= 0.6:
+    elif 0.2 <= sentiment_score < 0.5:
         sentiment_label = "Somewhat-Bullish"
-    elif negative > 0.6:
-        sentiment_label = "Bearish"
-    elif negative > positive and negative > neutral and 0.4 <= negative <= 0.6:
+    elif -0.2 <= sentiment_score < 0.2:
+        sentiment_label = "Neutral"
+    elif -0.5 <= sentiment_score < -0.2:
         sentiment_label = "Somewhat-Bearish"
     else:
-        sentiment_label = "Neutral"
-        
+        sentiment_label = "Bearish"
     return sentiment_label, sentiment_score
 
 def aggregate_sentiment(sentiment_scores, sentiment_labels):
@@ -57,13 +56,13 @@ def aggregate_sentiment(sentiment_scores, sentiment_labels):
     most_common_label = Counter(sentiment_labels).most_common(1)[0][0]
     
     # Use same thresholds as in classify_sentiment
-    if avg_score >= 0.9:
+    if avg_score >= 0.5:
         final_sentiment = "Bullish"
-    elif 0.4 <= avg_score < 0.9:
+    elif 0.2 <= avg_score < 0.5:
         final_sentiment = "Somewhat-Bullish"
-    elif -0.4 <= avg_score < 0.4:
+    elif -0.2 <= avg_score < 0.2:
         final_sentiment = "Neutral"
-    elif -0.9 < avg_score < -0.4:
+    elif -0.5 <= avg_score < -0.2:
         final_sentiment = "Somewhat-Bearish"
     else:
         final_sentiment = "Bearish"
